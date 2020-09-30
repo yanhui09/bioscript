@@ -10,7 +10,7 @@
 
 
 #Add help message
-args=$(getopt -l "input-path:,output-path:,feature-name::,full-feature::,help::" -o "i:o:n::f::h::" -- "$@")
+args=$(getopt -l "input-path:,output-path:,feature-name::,full-feature::,help::" -o "i:o:n::f::h::" -a -- "$@")
 
 eval set -- "$args"
 
