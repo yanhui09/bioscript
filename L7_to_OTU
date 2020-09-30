@@ -1,12 +1,16 @@
 #!/bin/bash
 
-#Yan Hui
-#This is a shell script to transfrom L7 table to one OTU-table like table
-#L7 table uses taxonomic label as OTU id, with no taxonomy column
-#otu table with first column as OTU ID and last column as taxonomy
+#This is a shell script to transfrom summarized OTU table (e.g. L7) back to OTU-table format accepted by biom. 
+#A summarized OTU table uses taxonomic label as OTU id, with no taxonomy column
+#OTU table with first column as OTU ID and last column as taxonomy
+
+# Yan Hui
+# 30/09/2020
+# huiyan@food.ku.dk
+
 
 #Add help message
-args=$(getopt -l "input-path:output-path" -o "i:o:h" -- "$@")
+args=$(getopt -l "input-path:,output-path:,feature-name::,full-feature::,help::" -o "i:o:n::f::h::" -- "$@")
 
 eval set -- "$args"
 
@@ -25,13 +29,24 @@ while [ $# -ge 1 ]; do
                         OUTPUT_PATH="$2"
                         shift
                         ;;
-                -h)
-                   echo "This transform a L7 summarized table to a OTU-table like table for biom format. And it automatically removes the unclassified features."
-                   echo "Usage: $0 [-n number-of-people] [-s section-id] [-c cache-file]"
-                   echo "  -i, --input-path    The path for the imported L7_summarized table"
-                   echo "  -o, --output-path    The path for the exported OTU-table like table"
+                -n|--feature-name)
+                        NAME_FEATURE="$2"
+                        shift
+                        ;;
+                -f|--full-feature)
+                        FULL_FEATURE=1 # indicator
+                        ;;
+                -h|--help)
+                   echo "This script transforms a summarized OTU table (e.g. L7) back to a OTU-table format accepted by biom."
+                   echo "Usage: $0 [-i input-path] [-o output-path] [-n feature-name] [-f full-feature] [-h help]"
+                   echo "  -i, --input-path    Required, The path for the imported L7_summarized table."
+                   echo "  -o, --output-path    Required, The path for the exported OTU-table like table."
+                   echo "  -n, --feature-name    Optional, Personal feature name, e.g. ONT, OTU, etc. Default: Feature."
+                   echo "  -f, --full-feature    Optional, Include the unclassifed feature (i.e. Unassigned;Other). Default: No."
+                   echo "  -h, --help    Optional, Help message. "   
                    echo ""
                    echo "Example: $0 -i ./L7.table -o ./OTU.table"
+                   echo "Rename Feature as OTU and keep all features: $0 -i ./L7.table -o ./OTU.table -n OTU -f"
                    exit 0
                         ;;
         esac
@@ -42,11 +57,23 @@ done
 #############################################################################################
 # processing code
 # clean the input data, remove unclassified reads
-grep -v 'Unassigned;Other' $INPUT_PATH > ./file.tmp 
+if [ -z "${FULL_FEATURE}" ]
+then
+  grep -v 'Unassigned;Other' $INPUT_PATH > ./file.tmp
+else
+  cat $INPUT_PATH > ./file.tmp
+fi
+
+# if statement to check if there's a manual design
+if [ -z "${NAME_FEATURE}" ]
+then
+  NAME_FEATURE="FEATURE"
+fi
+
 # add column names for the last column -- "Taxonomy" column
 awk '{if(NR==2) {FS=OFS="\t";print $0, "Taxonomy";} else print $0}' ./file.tmp | 
 # use awk to adjust the column
-awk -v my_var=Feature '{if(NR>2) {FS=OFS="\t"; first=$1; $1=NR-2; print my_var $0,first} else print $0}' >  $OUTPUT_PATH
+awk -v my_var=$NAME_FEATURE '{if(NR>2) {FS=OFS="\t"; first=$1; $1=NR-2; print my_var $0,first} else print $0}' >  $OUTPUT_PATH
 
 rm -f ./file.tmp
 exit 
