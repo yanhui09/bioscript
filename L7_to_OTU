@@ -44,9 +44,9 @@ done
 # clean the input data, remove unclassified reads
 grep -v 'Unassigned;Other' $INPUT_PATH > ./file.tmp 
 # add column names for the last column -- "Taxonomy" column
-awk '{if(NR==2) {FS="\t";OFS="\t";print $0, "Taxonomy";} else print $0}' ./file.tmp | 
+awk '{if(NR==2) {FS=OFS="\t";print $0, "Taxonomy";} else print $0}' ./file.tmp | 
 # use awk to adjust the column
-awk -v my_var=Feature '{if(NR>2) {FS="\t";OFS="\t";first=$1; $1=""; print my_var NR-2, "\t", $0, first;} else print $0}' >  $OUTPUT_PATH
+awk -v my_var=Feature '{if(NR>2) {FS=OFS="\t"; first=$1; $1=NR-2; print my_var $0,first} else print $0}' >  $OUTPUT_PATH
 
 rm -f ./file.tmp
 exit 
