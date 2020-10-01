@@ -38,7 +38,7 @@ while [ $# -ge 1 ]; do
                         ;;
                 -h|--help)
                    echo "This script transforms a summarized OTU table (e.g. L7) back to a OTU-table format accepted by biom."
-                   echo "Usage: $0 [-i input-path] [-o output-path] [-n feature-name] [-f full-feature] [-h help]"
+                   echo "Usage: $0 [-i (-)-input-path] [-o (-)-output-path]"
                    echo "  -i, --input-path    Required, The path for the imported L7_summarized table."
                    echo "  -o, --output-path    Required, The path for the exported OTU-table like table."
                    echo "  -n, --feature-name    Optional, Personal feature name, e.g. ONT, OTU, etc. Default: Feature."
