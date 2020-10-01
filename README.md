@@ -5,4 +5,4 @@ A repository for some useful bio-scripts.
 
 Script | Type | System | Description | Note
 --- | --- | --- | --- | ---
-L7_to_OTU | `Bash Shell` | `GNU/Linux` | Summarzied table -> OTU table | *MacOS: gnu-opt required* 
+L7_to_OTU | `Bash Shell` | `GNU/Linux` | Summarzied OTU table -> OTU table | *MacOS: gnu-opt required* 
