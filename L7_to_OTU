@@ -8,72 +8,62 @@
 # 30/09/2020
 # huiyan@food.ku.dk
 
+############################################################################
+# Default parameters
+NAME_FEATURE="FEATURE"; FULL_FEATURE=false;
+  
+############################################################################
+# Wrapped function, e.g. usage()
+usage () {
+    echo ""
+    echo "Note: This script transforms a summarized OTU table (e.g. L7) back to a OTU-table format accepted by biom."
+    echo "Usage: $0 [-i --input-path] [-o --output-path] [optional]"
+    echo "  -i, --input-path    Required, The path for a imported summarized OTU table."
+    echo "  -o, --output-path    Required, The path for the exported OTU table."
+    echo "  -n, --feature-name    Optional, Personal feature name, e.g. ONT, OTU, etc. Default: Feature"
+    echo "  --full-feature    Optional, Include the unclassifed feature (i.e. Unassigned;Other). Default: FALSE"
+    echo "  -h, --help    Optional, Help message."   
+    echo ""
+    echo "Example: $0 -i ./L7-summarized.table -o ./OTU.table"
+    echo "Rename Feature as OTU and keep all features: $0 -i ./L7-summarized.table -o ./OTU.table -n OTU --full-name"
+    echo "";}
 
-#Add help message
-args=$(getopt -l "input-path:,output-path:,feature-name:,full-feature::,help::" -o "i:o:n:f::h::" -- "$@")
+#############################################################################
+# Check input
+if [ $# -eq 0 ] || ! [[ $* =~ ^- ]]; then usage; exit 1; fi
+# Params loading
+args=$(getopt --long "input-path:,output-path:,feature-name:,full-feature,help" -o "i:o:n:h" -n "Input error" -- "$@")
+# Ensure corrected input of params
+if [ $? -ne 0 ]; then usage; exit 1; fi
 
 eval set -- "$args"
 
-while [ $# -ge 1 ]; do
+while true; do
         case "$1" in
-                --)
-                    # No more options left.
-                    shift
-                    break
-                   ;;
-                -i|--input-path)
-                        INPUT_PATH="$2"
-                        shift
-                        ;;
-                -o|--output-path)
-                        OUTPUT_PATH="$2"
-                        shift
-                        ;;
-                -n|--feature-name)
-                        NAME_FEATURE="$2"
-                        shift
-                        ;;
-                -f|--full-feature)
-                        FULL_FEATURE=1 # indicator
-                        ;;
-                -h|--help)
-                   echo "This script transforms a summarized OTU table (e.g. L7) back to a OTU-table format accepted by biom."
-                   echo "Usage: $0 [-i --input-path] [-o --output-path] [Optional options]"
-                   echo "  -i, --input-path    Required, The path for the imported L7_summarized table."
-                   echo "  -o, --output-path    Required, The path for the exported OTU-table like table."
-                   echo "  -n, --feature-name    Optional, Personal feature name, e.g. ONT, OTU, etc. Default: Feature."
-                   echo "  -f, --full-feature    Optional, Include the unclassifed feature (i.e. Unassigned;Other). Default: No."
-                   echo "  -h, --help    Optional, Help message. "   
-                   echo ""
-                   echo "Example: $0 -i ./L7.table -o ./OTU.table"
-                   echo "Rename Feature as OTU and keep all features: $0 -i ./L7.table -o ./OTU.table -n OTU -f"
-                   exit 0
-                        ;;
+                -i|--input-path) INPUT_PATH="$2"; shift 2;;
+                -o|--output-path) OUTPUT_PATH="$2"; shift 2;;
+                -n|--feature-name) NAME_FEATURE="$2"; shift 2;;
+                --full-feature) FULL_FEATURE=true, shift 1;; # Indicator changed
+                -h|--help) usage; exit 1; shift 1;;
+                #--) usage; exit 1; shift; break;; # End loop
+                *) break;;    
         esac
-
-        shift
+        #shift
 done
 
-#############################################################################################
-# processing code
-# clean the input data, remove unclassified reads
-if [ -z "${FULL_FEATURE}" ]
-then
+##############################################################################
+# Processing code
+# Chosse to remove unclassified or not
+if [ "$FULL_FEATURE" = false ]; then
   grep -v 'Unassigned;Other' $INPUT_PATH > ./file.tmp
 else
   cat $INPUT_PATH > ./file.tmp
 fi
 
-# if statement to check if there's a manual design
-if [ -z "${NAME_FEATURE}" ]
-then
-  NAME_FEATURE="FEATURE"
-fi
-
-# add column names for the last column -- "Taxonomy" column
+# Add column names for the last column -- "Taxonomy" column
 awk '{if(NR==2) {FS=OFS="\t";print $0, "Taxonomy";} else print $0}' ./file.tmp | 
-# use awk to adjust the column
+# Use awk to adjust the column
 awk -v my_var=$NAME_FEATURE '{if(NR>2) {FS=OFS="\t"; first=$1; $1=NR-2; print my_var $0,first} else print $0}' >  $OUTPUT_PATH
-
 rm -f ./file.tmp
-exit 
+
+exit 0
