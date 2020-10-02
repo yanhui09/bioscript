@@ -29,8 +29,9 @@ usage () {
     echo "";}
 
 #############################################################################
-# Check input
-if [ $# -eq 0 ] || ! [[ $* =~ ^- ]]; then usage; exit 1; fi
+# Check input, ensure alphabet/numbers behind -/--, and at least one option
+if [ $# -eq 0 ] || ! [[ $* =~ ^(-|--)[a-z] ]]; then 
+    echo "Invalid use: please check the help message below." ; usage; exit 1; fi
 # Params loading
 args=$(getopt --long "input-path:,output-path:,feature-name:,full-feature,help" -o "i:o:n:h" -n "Input error" -- "$@")
 # Ensure corrected input of params
