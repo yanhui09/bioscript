@@ -1,5 +1,11 @@
 #!/bin/bash
 # tansform the keg data from kegg to wide-format kegg table
+# inherted from a post on biostar forum
+
+# Yan Hui
+# ?2019
+# huiyan@food.ku.dk
+
 # download htxt file from kegg website
 wget 'http://www.genome.jp/kegg-bin/download_htext?htext=ko00001.keg&format=htext&filedir=' -O ko00001.keg
 # parse .keg file to table
