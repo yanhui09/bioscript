@@ -2,7 +2,7 @@
 
 #################################################################
 # Function:  Merge two collapsed biom tables based on the taxa/OTUID
-# Call: Rscript merge_colllapsed_tables.R -i *.biom -o merged.biom
+# Call: Rscript merge_bioms.R -i *.biom -o merged.biom
 # R packages used: optparse, biomformat
 # Authors: Yan Hui
 # Last update: 2020-11-6, Yan Hui
