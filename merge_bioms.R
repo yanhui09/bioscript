@@ -110,13 +110,15 @@ if (ntax > 1) {
 }
   
 # check if has overlapped taxa
-if (dim(df_merge)[1] == 1) {
-  taxa_warning <- "No overlapped taxa found.\n
-  Please check if the taxa format is uniform.\n
-  e.g. taxonomy separed by \";\" or \"; \" "
-  cat(taxa_warning)
-  q(status = 1)
-  }
+if (! is.null(df_merge)) {
+  if (dim(df_merge)[1] == 1) {
+    taxa_warning <- "No overlapped taxa found.\n
+    Please check if the taxa format is uniform.\n
+    e.g. taxonomy separed by \";\" or \"; \" "
+    cat(taxa_warning)
+    q(status = 1)
+    }
+    }
 # use zero to replace NAs
 if (na2zero == TRUE)
   df_merge[is.na(df_merge)] <- 0
