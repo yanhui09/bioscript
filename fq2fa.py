@@ -1,4 +1,9 @@
 #!/usr/bin/python
+#-------------------
+# Author: Yan Hui
+# E-mail: huiyan@food.ku.dk
+# Date: 27/01/2021
+#-------------------
 
 import sys
 import argparse
