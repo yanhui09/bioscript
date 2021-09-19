@@ -10,6 +10,6 @@ Script | Type | System | Description | Note
 [merge_bioms.R](/merge_bioms.R) | `R` | `Unix/Win` | merge biom files by #OTU ID | *MacOS: not tested*
 [fq2fa.py](/fq2fa.py) | `Python` | `Unix/Win` | fastq -> fasta | *MacOS/Win: not tested*
 [extract_RGI_fasta.py](/extract_RGI_fasta.py) | `Python 3.9.5; Bio, pandas` | `Unix/Win` | extract ORF using RGI output | *MacOS/Win: not tested*
-[q2-core.sh](/q2-core.sh) | `QIIME 2` & [q2meta-grouped.py](/q2meta-grouped.py) | `unix` | quick QIIME analysis | *MacOS: not tested*
-[q2-coreN.sh](/q2-core.sh) | `QIIME 2` & [q2meta-grouped.py](/q2meta-grouped.py) | `unix` | quick QIIME analysis (ONT) | *MacOS: not tested*
+[q2-core.sh](/q2-core.sh) | `QIIME 2` & [q2meta-grouped.py](/q2meta-grouped.py) | `Linux` | quick QIIME analysis | *MacOS: gnu-opt required*
+[q2-coreN.sh](/q2-core.sh) | `QIIME 2` & [q2meta-grouped.py](/q2meta-grouped.py) | `Linux` | quick QIIME analysis (ONT) | *MacOS: gnu-opt required*
 [q2meta-grouped.py](q2meta-grouped.py) | `QIIME 2` | `unix` | create grouped metadata for QIIME | *MacOS: not tested*
