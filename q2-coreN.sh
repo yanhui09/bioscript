@@ -74,7 +74,7 @@ awk '{printf $1"\t"$NF"\n"}' "$QIIME2ANA/biom.tsv" > "$QIIME2ANA/taxonomy.tsv"
 cp "$METADATA" "$QIIME2ANA/metadata.tsv"
 
 # create the aggregated metadata for grouped abundance plot
-./q2meta-grouped.py -m "$METADATA" -g "$GROUP" -o "$QIIME2ANA/metadata_Group.tsv"
+python ./q2meta-grouped.py -m "$METADATA" -g "$GROUP" -o "$QIIME2ANA/metadata_Group.tsv"
 
 # extract subset metadata naming
 FILE_NAME=$(basename -- "$METADATA")
