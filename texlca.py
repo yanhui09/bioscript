@@ -60,6 +60,16 @@ def LCSubstr(arr):
  
     return lcs
 
+def LCA(arr):
+    """length(arr) == 1, just return the string"""
+    arr = list(arr)
+    n = len(arr)
+    if n == 1:
+        out = arr[0]
+    else:
+        out = LCSubstr(arr)
+    return out
+
 def LCAtex(input, sep, header, read, tax, delimiter):
     """load hits table"""
     if header:
@@ -69,7 +79,7 @@ def LCAtex(input, sep, header, read, tax, delimiter):
     df1 = df.iloc[:, [int(read), int(tax)]]
     
     """get LCA taxonomy grouped by read, rstrip last comma"""
-    df2 = df1.groupby(df1.iloc[:,0]).agg(LCSubstr)
+    df2 = df1.groupby(df1.iloc[:,0]).agg(LCA)
     df2.iloc[:,1] = df2.iloc[:,1].str.rstrip(delimiter)
     return df2
 
