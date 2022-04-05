@@ -23,6 +23,7 @@ def parse_arguments():
     parser.add_argument("-r", "--read", help='zero-indexing column position for read [0]', default=0)
     parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy [-1]', default=-1)
     parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels [;]', default=";")
+    parser.add_argument("-b", "--substring", help='find common substring rather than prefix [FALSE]', action="store_true", default=False)
     parser.add_argument("-o", "--output", help='output file path')
 
     args = parser.parse_args()
@@ -60,17 +61,68 @@ def LCSubstr(arr):
  
     return lcs
 
-def LCA(arr):
+# longest common suffix with binary search
+#https://www.geeksforgeeks.org/longest-common-prefix-using-binary-search/
+# A Function to find the string having the
+# minimum length and returns that length
+def minlen(strList):
+    return len(min(strList, key = len))
+
+# check common prefix 
+def common_prefix(strList, str, start, end):
+    for i in range(0, len(strList)):
+        word = strList[i]
+        for j in range(start, end + 1):
+            if word[j] != str[j]:
+                return False
+    return True
+ 
+# A Function that returns the longest
+# common prefix from the array of strings
+def LCP(strList):
+    index = minlen(strList)
+    prefix = ""
+ 
+    # in-place binary search
+    # on the first string of the array
+    # in the range 0 to index
+    low, high = 0, index - 1
+    while low <= high:
+ 
+        # Same as (low + high)/2, but avoids
+        # overflow for large low and high
+        mid = int(low + (high - low) / 2)
+        if common_prefix(strList,  
+                             strList[0], low, mid):
+             
+            # If all the strings in the input array
+            # contains this prefix then append this
+            # substring to our answer
+            prefix = prefix + strList[0][low:mid + 1]
+ 
+            # And then go for the right part
+            low = mid + 1
+        else:
+             
+            # Go for the left part
+            high = mid - 1
+ 
+    return prefix
+
+def LCA(arr, pattern):
     """length(arr) == 1, just return the string"""
     arr = list(arr)
     n = len(arr)
     if n == 1:
         out = arr[0]
     else:
-        out = LCSubstr(arr)
+        if pattern:
+            out = LCSubstr(arr)
+        else:
+            out = LCP(arr)
     return out
 
-def LCAtex(input, sep, header, read, tax, delimiter):
+def LCAtex(input, sep, header, read, tax, delimiter, pattern):
     """load hits table"""
     if header:
         df = pandas.read_csv(input, sep=sep, header=0, engine = 'python')
@@ -79,11 +131,11 @@ def LCAtex(input, sep, header, read, tax, delimiter):
     df1 = df.iloc[:, [int(read), int(tax)]]
     
     """get LCA taxonomy grouped by read, rstrip last comma"""
-    df2 = df1.groupby(df1.iloc[:,0]).agg(LCA)
+    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern))
     df2.iloc[:,1] = df2.iloc[:,1].str.rstrip(delimiter)
     return df2
 
 if __name__ == "__main__":
     args = parse_arguments()
-    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter)
+    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter, args.substring)
     df.to_csv(args.output, sep=args.sep, index=False, header=args.header)
