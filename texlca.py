@@ -23,7 +23,7 @@ def parse_arguments():
     parser.add_argument("-r", "--read", help='zero-indexing column position for read [0]', default=0)
     parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy [-1]', default=-1)
     parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels [;]', default=";")
-    parser.add_argument("-b", "--substring", help='find common substring rather than prefix [FALSE]', action="store_true", default=False)
+    parser.add_argument("-b", "--substring", help='find common substring rather than prefix block [FALSE]', action="store_true", default=False)
     parser.add_argument("-o", "--output", help='output file path')
 
     args = parser.parse_args()
@@ -107,9 +107,21 @@ def LCP(strList):
             # Go for the left part
             high = mid - 1
  
-    return prefix
+    return str(prefix)
 
-def LCA(arr, pattern):
+def LCPB(strList, delimiter):
+    """export the most common prefix blocks from the most common prefix"""
+    lcprefix = LCP(strList)
+    n_delimters = lcprefix.count(str(delimiter)) + 1
+    """get the minimum length of the desired prefix block"""
+    blocList = [str(delimiter).join(s.split(delimiter)[0:n_delimters]) for s in strList]
+    # join without delimiter in the end
+    minlen_bloc = minlen(blocList) + 1
+    if len(lcprefix) < minlen_bloc:
+        lcprefix = lcprefix.rsplit(delimiter, 1)[0]
+    return lcprefix    
+
+def LCA(arr, pattern, delimiter):
     """length(arr) == 1, just return the string"""
     arr = list(arr)
     n = len(arr)
@@ -119,7 +131,7 @@ def LCA(arr, pattern):
         if pattern:
             out = LCSubstr(arr)
         else:
-            out = LCP(arr)
+            out = LCPB(arr, delimiter)
     return out
 
 def LCAtex(input, sep, header, read, tax, delimiter, pattern):
@@ -131,7 +143,7 @@ def LCAtex(input, sep, header, read, tax, delimiter, pattern):
     df1 = df.iloc[:, [int(read), int(tax)]]
     
     """get LCA taxonomy grouped by read, rstrip last comma"""
-    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern))
+    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern, delimiter=delimiter))
     df2.iloc[:,1] = df2.iloc[:,1].str.rstrip(delimiter)
     return df2
 
