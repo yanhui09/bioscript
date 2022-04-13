@@ -24,6 +24,7 @@ def parse_arguments():
     parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy [-1]', default=-1)
     parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels [;]', default=";")
     parser.add_argument("-b", "--substring", help='find common substring rather than prefix block [FALSE]', action="store_true", default=False)
+    parser.add_argument("-e", "--escore", help='zero-indexing column position for similarity score [None], keep top hits if applied', default=None)
     parser.add_argument("-o", "--output", help='output file path')
 
     args = parser.parse_args()
@@ -134,20 +135,29 @@ def LCA(arr, pattern, delimiter):
             out = LCPB(arr, delimiter)
     return out
 
-def LCAtex(input, sep, header, read, tax, delimiter, pattern):
+def LCAtex(input, sep, header, read, tax, delimiter, pattern, escore):
     """load hits table"""
     if header:
         df = pandas.read_csv(input, sep=sep, header=0, engine = 'python')
     else:
         df = pandas.read_csv(input, sep=sep, header=None, engine = 'python')
-    df1 = df.iloc[:, [int(read), int(tax)]]
+    
+    # escore filter or not
+    if escore is None:
+        df1 = df.iloc[:, [int(read), int(tax)]]
+    else:
+        df1 = df.iloc[:, [int(read), int(tax), int(escore)]]
+        # idx by groupby max escore 
+        idx = df1.groupby(df1.iloc[:,0])[df1.columns[2]].apply(lambda x: x == x.max())
+        # filter by escore and discard escore column
+        df1 = df1[idx].iloc[:,0:2]
     
     """get LCA taxonomy grouped by read, rstrip last comma"""
-    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern, delimiter=delimiter))
+    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern, delimiter=delimiter))        
     df2.iloc[:,1] = df2.iloc[:,1].str.rstrip(delimiter)
     return df2
 
 if __name__ == "__main__":
     args = parse_arguments()
-    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter, args.substring)
+    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter, args.substring, args.escore)
     df.to_csv(args.output, sep=args.sep, index=False, header=args.header)
