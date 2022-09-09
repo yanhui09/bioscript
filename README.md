@@ -15,3 +15,4 @@ Script | Type | System | Description | Note
 [q2meta-grouped.py](q2meta-grouped.py) | `QIIME 2` | `Unix` | create grouped metadata for QIIME | *MacOS: not tested*
 [fq2dir.sh](fq2dir.sh) | `Bash` | `Uniux` | fastqs to sample-specific directory | *Macos not tested*
 [texlca.py](texlca.py) | `Python/pandas,argparse` | `Unix/Win` | simple LCA taxonomy on text (LCS) | *MacOS/Win: not tested*
+[glines.py](glines.py) | `Python/argparse` | `Unix` | group ordered lines if meeting a substring | *MacOS: not tested*
