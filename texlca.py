@@ -15,17 +15,19 @@ def parse_arguments():
         description="TexLCA: simple local common ancestors based on taxonomy in text.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=('''Example:
-        texlca.py -i hits.tsv -o lca.tsv [non-header tsv]
-        texlca.py -i hits.csv -o lca.csv -a -s , -r 1 -t 4 -d ; [header csv]'''))
-    parser.add_argument("-i", "--input", help='hits table as input')
-    parser.add_argument("-s", "--sep", help='file separator [\\t]', default="\t")
-    parser.add_argument("-a", "--header", help='header as column name [TRUE]', action="store_true", default=False)
-    parser.add_argument("-r", "--read", help='zero-indexing column position for read [0]', default=0)
-    parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy [-1]', default=-1)
-    parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels [;]', default=";")
-    parser.add_argument("-b", "--substring", help='find common substring rather than prefix block [FALSE]', action="store_true", default=False)
-    parser.add_argument("-e", "--escore", help='zero-indexing column position for similarity score [None], keep top hits if applied', default=None)
-    parser.add_argument("-o", "--output", help='output file path')
+        python texlca.py -i hits.tsv -o lca.tsv [non-header tsv]
+        python texlca.py -i hits.csv -o lca.csv -a -r 1 -s , -t 4 [header csv]
+        python texlca.py -i hits.tsv -o lca.tsv -p 0.8 [DCAs in non-header tsv] '''))
+    parser.add_argument("-i", "--input", help='hits table as input', required=True)
+    parser.add_argument("-s", "--sep", help='file separator (default: \\t)', default="\t")
+    parser.add_argument("-a", "--header", help='header as column name ', action="store_true", default=False)
+    parser.add_argument("-r", "--read", help='zero-indexing column position for read (default: %(default)s)', default=0)
+    parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy (default: %(default)s)', default=-1)
+    parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels (default: %(default)s)', default=";")
+    parser.add_argument("-p", "--percent", help='percentage of agreement on local common ancestors, making dorminant common ancestors if below 1 (default: %(default)s)', default="1")
+    parser.add_argument("-b", "--substring", help='find common substring rather than prefix block (default: %(default)s)', action="store_true", default=False)
+    parser.add_argument("-e", "--escore", help='zero-indexing column position for similarity score , keep top hits if applied (default: %(default)s)', default=None)
+    parser.add_argument("-o", "--output", help='output file path', required=True)
 
     args = parser.parse_args()
     return args
@@ -122,7 +124,38 @@ def LCPB(strList, delimiter):
         lcprefix = lcprefix.rsplit(delimiter, 1)[0]
     return lcprefix    
 
-def LCA(arr, pattern, delimiter):
+# extend longest common prefix block if a percentage of hits agree
+# DCPB: dominant common prefix blcok
+
+# get value by index from list, split from string
+# return None if index is out of range
+def split_str(str, delimiter, index):
+    try:
+        return str.split(delimiter)[index]
+    except IndexError:
+        return None
+
+def DCPB(strList, delimiter, pct):
+    lcpb = LCPB(strList, delimiter)
+    n_delimeters = lcpb.count(delimiter)
+    # max number of delimiters in strList
+    nmax_delimters = max([s.count(delimiter) for s in strList])
+    # appending new block if the percentage of agreed hits is above the threshold
+    if n_delimeters < nmax_delimters:
+        for i in range(n_delimeters + 1, nmax_delimters + 1):
+            blocList = [split_str(s, delimiter, i) for s in strList]
+            # remove None
+            blocList = [s for s in blocList if s]
+            # get the most common block and its frequency
+            bloc = max(sorted(set(blocList)), key = blocList.count)
+            freq = blocList.count(bloc)
+            if freq / len(strList) >= float(pct):
+                lcpb = str(delimiter).join([lcpb, bloc])
+            else:
+                break
+    return lcpb
+    
+def LCA(arr, pattern, delimiter, pct):
     """length(arr) == 1, just return the string"""
     arr = list(arr)
     n = len(arr)
@@ -132,10 +165,10 @@ def LCA(arr, pattern, delimiter):
         if pattern:
             out = LCSubstr(arr)
         else:
-            out = LCPB(arr, delimiter)
+            out = DCPB(arr, delimiter, pct)
     return out
 
-def LCAtex(input, sep, header, read, tax, delimiter, pattern, escore):
+def LCAtex(input, sep, header, read, tax, delimiter, pct, pattern, escore):
     """load hits table"""
     if header:
         df = pandas.read_csv(input, sep=sep, header=0, engine = 'python')
@@ -153,11 +186,11 @@ def LCAtex(input, sep, header, read, tax, delimiter, pattern, escore):
         df1 = df1[idx].iloc[:,0:2]
     
     """get LCA taxonomy grouped by read, rstrip last comma"""
-    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x,pattern=pattern, delimiter=delimiter))        
+    df2 = df1.groupby(df1.iloc[:,0]).agg(lambda x: LCA(x, pattern=pattern, delimiter=delimiter, pct=pct))        
     df2.iloc[:,1] = df2.iloc[:,1].str.rstrip(delimiter)
     return df2
 
 if __name__ == "__main__":
     args = parse_arguments()
-    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter, args.substring, args.escore)
+    df = LCAtex(args.input, args.sep, args.header, args.read, args.tax, args.delimiter, args.percent, args.substring, args.escore)
     df.to_csv(args.output, sep=args.sep, index=False, header=args.header)
