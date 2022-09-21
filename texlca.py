@@ -24,7 +24,7 @@ def parse_arguments():
     parser.add_argument("-r", "--read", help='zero-indexing column position for read (default: %(default)s)', default=0)
     parser.add_argument("-t", "--tax", help='zero-indexing column position for taxonomy (default: %(default)s)', default=-1)
     parser.add_argument("-d", "--delimiter", help='delimiter for taxonomic levels (default: %(default)s)', default=";")
-    parser.add_argument("-p", "--percent", help='percentage of agreement on local common ancestors, making dorminant common ancestors if below 1 (default: %(default)s)', default="1")
+    parser.add_argument("-p", "--percent", help='percentage of agreement on local common ancestors, finding local dorminant ancestors if below 1 (default: %(default)s)', default="1")
     parser.add_argument("-b", "--substring", help='find common substring rather than prefix block (default: %(default)s)', action="store_true", default=False)
     parser.add_argument("-e", "--escore", help='zero-indexing column position for similarity score , keep top hits if applied (default: %(default)s)', default=None)
     parser.add_argument("-o", "--output", help='output file path', required=True)
